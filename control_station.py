@@ -121,13 +121,29 @@ def gauge(labels=['LOW','MEDIUM','HIGH','VERY HIGH','EXTREME'], colors='jet_r', 
     return ax
 #===============================================================================================
 
+LARGE_FONT= ("Verdana", 12)
+NORM_FONT= ("Verdana", 10)
+SMALL_FONT= ("Verdana", 8)
+
+orange_bkg = '#ffcc99'
+blue_bkg = '#99ccff'
+
+HEIGHT=400
+WIDTH=400
+
 LARGE_FONT = ("Verdana", 12)
 style.use("ggplot")
 
+#==============================================plot for center screen==============================================================================
 f = Figure(figsize=(25,25), dpi=100)
 a = f.add_subplot(2,2,4)
 b = f.add_subplot(2,2,1)
 gauge(labels=['0','10','20','30','40','50','60'], colors='RdBu', arrow=7, title='NIWA ENSO TRACKER', ax=b)
+
+g = Figure(figsize=(25,25), dpi=100)
+c = g.add_subplot(2,2,4)
+d = g.add_subplot(2,2,1)
+gauge(labels=['0','10','20','30','40','50','60'], colors='RdBu', arrow=7, title='NIWA ENSO TRACKER', ax=d)
 
 def animate(i):
     pullData = open("sampleData.txt", "r").read()
@@ -142,6 +158,8 @@ def animate(i):
             
     a.clear()
     a.plot(xList, yList)
+    c.clear()
+    c.plot(xList, yList)
     
     pullData = open("mph.txt", "r").read()
     dataList = pullData.split('\n')
@@ -153,6 +171,9 @@ def animate(i):
     cur_mph = xList[len(xList) - 1]
     b.clear()
     gauge(labels=['0','5','10','15','20','25','30','35','40','45','50','55','60'], colors='RdBu', arrow=int(cur_mph)//5 + 1, title=str(cur_mph) + ' mph', ax=b)
+    d.clear()
+    gauge(labels=['0','5','10','15','20','25','30','35','40','45','50','55','60'], colors='RdBu', arrow=int(cur_mph)//5 + 1, title=str(cur_mph) + ' mph', ax=d)
+#========================================================================================================================================================
 
 class Control_Station(tk.Tk):
     
@@ -186,61 +207,101 @@ class Control_Station(tk.Tk):
         frame = self.frames[cont]
         frame.tkraise()
         
-def qf(param):
-    print(param)
+    def NewSideScreenOne(self):      
+        self.root_new_Side_Screen_One = tk.Tk()
+        container = tk.Frame(self.root_new_Side_Screen_One)
+        container.pack(side="top", fill="both", expand = True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+        frame = PageOne(container, self.root_new_Side_Screen_One)
+        frame.grid(row=0, column=0, sticky="nsew")
+        frame.tkraise()     
+        ani1 = animation.FuncAnimation(g, animate, interval=500)
+        self.root_new_Side_Screen_One.mainloop()
         
+    def NewSideScreenTwo(self):      
+        self.root_new_Side_Screen_Two = tk.Tk()
+        container = tk.Frame(self.root_new_Side_Screen_Two)
+        container.pack(side="top", fill="both", expand = True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+        frame = PageTwo(container, self.root_new_Side_Screen_Two)
+        frame.grid(row=0, column=0, sticky="nsew")
+        frame.tkraise()      
+        self.root_new_Side_Screen_Two.mainloop()
+        
+    def NewCenterScreen(self):      
+        self.root_new_Center_Screen = tk.Tk()
+        container = tk.Frame(self.root_new_Center_Screen)
+        container.pack(side="top", fill="both", expand = True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+        frame = PageThree(container, self.root_new_Center_Screen)
+        frame.grid(row=0, column=0, sticky="nsew")
+        frame.tkraise()  
+        ani = animation.FuncAnimation(f, animate, interval=500)
+        self.root_new_Center_Screen.mainloop()
+        
+def qf(param):
+    print(param)           
         
 class StartPage(tk.Frame):
     
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Start Page", font=LARGE_FONT)
+        label = tk.Label(self, text="UCSD ev Grand Prix Control Station", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
         
-        button1 = ttk.Button(self, text="Visit Page 1", command=lambda: controller.show_frame(PageOne))
+        button1 = ttk.Button(self, text="Side Screen 1", command=lambda: controller.NewSideScreenOne())
         button1.pack()
         
-        button2 = ttk.Button(self, text="Visit Page 2", command=lambda: controller.show_frame(PageTwo))
+        button2 = ttk.Button(self, text="Side Screen 2", command=lambda: controller.NewSideScreenTwo())
         button2.pack()
         
-        button3 = ttk.Button(self, text="Graph Page", command=lambda: controller.show_frame(PageThree))
+        button3 = ttk.Button(self, text="Center Screen", command=lambda: controller.NewCenterScreen())
         button3.pack()
         
 class PageOne(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Page One!!!", font=LARGE_FONT)
+        label = tk.Label(self, text="Side Screen One!!!", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
         
-        button1 = ttk.Button(self, text="Back to Home", command=lambda: controller.show_frame(StartPage))
-        button1.pack()
+        # button1 = ttk.Button(self, text="Back to Home", command=lambda: qf("TEST"))
+        # button1.pack()
         
-        button2 = ttk.Button(self, text="Page Two", command=lambda: controller.show_frame(PageTwo))
-        button2.pack()
+        # button2 = ttk.Button(self, text="Page Two", command=lambda: controller.show_frame(PageTwo))
+        # button2.pack()
+        
+        canvas = FigureCanvasTkAgg(g, self)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        
+        toolbar = NavigationToolbar2Tk(canvas, self)
+        toolbar.update()
+        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
 class PageTwo(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Page Two!!!", font=LARGE_FONT)
+        label = tk.Label(self, text="Side Screen Two!!!", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
         
-        button1 = ttk.Button(self, text="Back to Home", command=lambda: controller.show_frame(StartPage))
-        button1.pack()
+        # button1 = ttk.Button(self, text="Back to Home", command=lambda: controller.show_frame(StartPage))
+        # button1.pack()
         
-        button2 = ttk.Button(self, text="Page One", command=lambda: controller.show_frame(PageOne))
-        button2.pack()
+        # button2 = ttk.Button(self, text="Page One", command=lambda: controller.show_frame(PageOne))
+        # button2.pack()
         
 class PageThree(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Graph Page!!!", font=LARGE_FONT)
+        label = tk.Label(self, text="Center Screen!!!", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
         
-        button1 = ttk.Button(self, text="Back to Home", command=lambda: controller.show_frame(StartPage))
-        button1.pack()
-        
-        
+        # button1 = ttk.Button(self, text="Back to Home", command=lambda: qf("TEST"))
+        # button1.pack()
         
         canvas = FigureCanvasTkAgg(f, self)
         canvas.draw()
@@ -252,5 +313,6 @@ class PageThree(tk.Frame):
         
         
 app = Control_Station()
-ani = animation.FuncAnimation(f, animate, interval=500)
+# ani = animation.FuncAnimation(f, animate, interval=500)
+# ani1 = animation.FuncAnimation(g, animate, interval=500)
 app.mainloop()
