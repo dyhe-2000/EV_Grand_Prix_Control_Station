@@ -1,12 +1,13 @@
+
+import tkinter as tk
+from tkinter import *
+
 import matplotlib
 matplotlib.use("TkAgg")
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.figure import Figure
 import matplotlib.animation as animation
 from matplotlib import style
-
-import tkinter as tk
-from tkinter import ttk
 
 from matplotlib import cm
 from matplotlib import pyplot as plt
@@ -129,6 +130,7 @@ a = f.add_subplot(2,2,4)
 b = f.add_subplot(2,2,1)
 gauge(labels=['0','10','20','30','40','50','60'], colors='RdBu', arrow=7, title='NIWA ENSO TRACKER', ax=b)
 
+
 def animate(i):
     pullData = open("sampleData.txt", "r").read()
     dataList = pullData.split('\n')
@@ -154,6 +156,21 @@ def animate(i):
     b.clear()
     gauge(labels=['0','5','10','15','20','25','30','35','40','45','50','55','60'], colors='RdBu', arrow=int(cur_mph)//5 + 1, title=str(cur_mph) + ' mph', ax=b)
 
+
+def animate_graph(i):
+    pullData = open("sampleData.txt", "r").read()
+    dataList = pullData.split('\n')
+    xList = []
+    yList = []
+    for eachLine in dataList:
+        if len(eachLine) > 1:
+            x, y = eachLine.split(',')
+            xList.append(int(x))
+            yList.append(int(y))
+
+    a.clear()
+    a.plot(xList, yList)
+
 class Control_Station(tk.Tk):
     
     def __init__(self, *args, **kwargs):
@@ -171,21 +188,29 @@ class Control_Station(tk.Tk):
         self.frames = {}
         
         for F in (StartPage, PageOne, PageTwo, PageThree):
-            
-        
             frame = F(container, self)
-            
             self.frames[F] = frame
-            
             frame.grid(row=0, column=0, sticky="nsew")
         
         self.show_frame(StartPage)
+        self.window1 = tk.Toplevel(self)
+        self.window1.geometry("+930+300")
+        self.canvas1 = Canvas(self.window1, width=200, height=500)
+        tk.Label(self.window1, text="This is window 1", bg='green').pack(expand=1, fill=tk.Y)
+        self.canvas1.pack(side="top", fill="both")
+
+        self.window2 = tk.Toplevel(self)
+        self.window2.geometry("+90+300")
+        self.canvas2 = Canvas(self.window2, width=200, height=500)
+        tk.Label(self.window2, text="This is window 2", bg='red').pack(expand=1, fill=tk.Y)
+        self.canvas2.pack(side="top", fill="both")
         
     def show_frame(self, cont):
         
         frame = self.frames[cont]
         frame.tkraise()
-        
+
+
 def qf(param):
     print(param)
         
@@ -197,13 +222,13 @@ class StartPage(tk.Frame):
         label = tk.Label(self, text="Start Page", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
         
-        button1 = ttk.Button(self, text="Visit Page 1", command=lambda: controller.show_frame(PageOne))
+        button1 = Button(self, text="Visit Page 1", command=lambda: controller.show_frame(PageOne))
         button1.pack()
         
-        button2 = ttk.Button(self, text="Visit Page 2", command=lambda: controller.show_frame(PageTwo))
+        button2 = Button(self, text="Visit Page 2", command=lambda: controller.show_frame(PageTwo))
         button2.pack()
         
-        button3 = ttk.Button(self, text="Graph Page", command=lambda: controller.show_frame(PageThree))
+        button3 = Button(self, text="Graph Page", command=lambda: controller.show_frame(PageThree))
         button3.pack()
         
 class PageOne(tk.Frame):
@@ -212,10 +237,10 @@ class PageOne(tk.Frame):
         label = tk.Label(self, text="Page One!!!", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
         
-        button1 = ttk.Button(self, text="Back to Home", command=lambda: controller.show_frame(StartPage))
+        button1 = Button(self, text="Back to Home", command=lambda: controller.show_frame(StartPage))
         button1.pack()
         
-        button2 = ttk.Button(self, text="Page Two", command=lambda: controller.show_frame(PageTwo))
+        button2 = Button(self, text="Page Two", command=lambda: controller.show_frame(PageTwo))
         button2.pack()
         
 class PageTwo(tk.Frame):
@@ -224,10 +249,10 @@ class PageTwo(tk.Frame):
         label = tk.Label(self, text="Page Two!!!", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
         
-        button1 = ttk.Button(self, text="Back to Home", command=lambda: controller.show_frame(StartPage))
+        button1 = Button(self, text="Back to Home", command=lambda: controller.show_frame(StartPage))
         button1.pack()
         
-        button2 = ttk.Button(self, text="Page One", command=lambda: controller.show_frame(PageOne))
+        button2 = Button(self, text="Page One", command=lambda: controller.show_frame(PageOne))
         button2.pack()
         
 class PageThree(tk.Frame):
@@ -237,10 +262,8 @@ class PageThree(tk.Frame):
         label = tk.Label(self, text="Graph Page!!!", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
         
-        button1 = ttk.Button(self, text="Back to Home", command=lambda: controller.show_frame(StartPage))
+        button1 = Button(self, text="Back to Home", command=lambda: controller.show_frame(StartPage))
         button1.pack()
-        
-        
         
         canvas = FigureCanvasTkAgg(f, self)
         canvas.draw()
@@ -250,7 +273,7 @@ class PageThree(tk.Frame):
         toolbar.update()
         canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
-        
 app = Control_Station()
-ani = animation.FuncAnimation(f, animate, interval=500)
+ani1 = animation.FuncAnimation(f, animate, interval=500)
+ani2 = animation.FuncAnimation(f, animate_graph, interval=500)
 app.mainloop()
