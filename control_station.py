@@ -303,6 +303,12 @@ class PageThree(tk.Frame):
         # button1 = ttk.Button(self, text="Back to Home", command=lambda: qf("TEST"))
         # button1.pack()
         
+        # button1 = ttk.Button(self, text="Side Screen 1", command=lambda: controller.NewSideScreenOne())
+        # button1.pack()
+        
+        # button2 = ttk.Button(self, text="Side Screen 2", command=lambda: controller.NewSideScreenTwo())
+        # button2.pack()
+        
         canvas = FigureCanvasTkAgg(f, self)
         canvas.draw()
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
