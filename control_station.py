@@ -180,6 +180,16 @@ def animate(i):
           arrow=int(cur_mph) // 5 + 1, title=str(cur_mph) + ' mph', ax=d)
 
 
+def animate_dev(i, fig):
+    pullData = open("sampleData.txt", "r").read()
+    
+    dataList = pullData.split('\n')
+    xList = np.linspace(0,2*np.pi,100)
+    yList = [np.sin(2*x) for x in xList]
+    fig.axes[0].clear()
+    fig.axes[0].plot(xList,yList)
+
+    
 # ========================================================================================================================================================
 
 class Control_Station(tk.Tk):
@@ -231,6 +241,7 @@ class Control_Station(tk.Tk):
         frame = PageTwo(container, self.root_new_Side_Screen_Two)
         frame.grid(row=0, column=0, sticky="nsew")
         frame.tkraise()
+        
         self.root_new_Side_Screen_Two.mainloop()
 
     def NewCenterScreen(self):
@@ -292,8 +303,21 @@ class PageTwo(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         label = tk.Label(self, text="Side Screen Two!!!", font=LARGE_FONT)
-        label.pack(pady=10, padx=10)
-
+        label.grid(row=0,column=0)#.pack(pady=10, padx=10)
+        
+        h1 = Figure(figsize=(5, 5), dpi=100)
+        h1.add_subplot(1, 1, 1)
+        canvas = FigureCanvasTkAgg(h1, self)
+        canvas.draw()
+        canvas.get_tk_widget().grid(row=1,column=1)#.pack(side=tk.TOP, fill=tk.BOTH)
+        ani2 = animation.FuncAnimation(h1, animate_dev(None,h1), interval=500)
+        
+        h2 = Figure(figsize=(5, 5), dpi=100)
+        h2.add_subplot(1, 1, 1)
+        canvas = FigureCanvasTkAgg(h2, self)
+        canvas.draw()
+        canvas.get_tk_widget().grid(row=1,column=0)#.pack(side=tk.TOP, fill=tk.BOTH)
+        ani3 = animation.FuncAnimation(h2, animate_dev(None,h2), interval=500)
         # button1 = ttk.Button(self, text="Back to Home", command=lambda: controller.show_frame(StartPage))
         # button1.pack()
 
@@ -316,7 +340,8 @@ class PageThree(tk.Frame):
 
         # button2 = ttk.Button(self, text="Side Screen 2", command=lambda: controller.NewSideScreenTwo())
         # button2.pack()
-
+        
+        
         canvas = FigureCanvasTkAgg(f, self)
         canvas.draw()
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
