@@ -138,6 +138,10 @@ style.use("ggplot")
 f = Figure(figsize=(25,25), dpi=100)
 a = f.add_subplot(2,2,4)
 b = f.add_subplot(2,2,1)
+e = f.add_subplot(2,2,2)
+track_image = plt.imread("purdue_race_track.jpg")
+e.imshow(track_image)
+e.grid(False)
 gauge(labels=['0','10','20','30','40','50','60'], colors='RdBu', arrow=7, title='NIWA ENSO TRACKER', ax=b)
 
 g = Figure(figsize=(25,25), dpi=100)
@@ -173,6 +177,22 @@ def animate(i):
     gauge(labels=['0','5','10','15','20','25','30','35','40','45','50','55','60'], colors='RdBu', arrow=int(cur_mph)//5 + 1, title=str(cur_mph) + ' mph', ax=b)
     d.clear()
     gauge(labels=['0','5','10','15','20','25','30','35','40','45','50','55','60'], colors='RdBu', arrow=int(cur_mph)//5 + 1, title=str(cur_mph) + ' mph', ax=d)
+    
+    pullData = open("track_coordinates.txt", "r").read()
+    dataList = pullData.split('\n')
+    xList = []
+    yList = []
+    for eachLine in dataList:
+        if len(eachLine) > 1:
+            x, y = eachLine.split(',')
+            xList.append(int(x))
+            yList.append(int(y))
+            
+    if len(xList) > 0 and len(yList) > 0:
+        e.clear()
+        e.imshow(track_image)
+        e.grid(False)
+        e.scatter([xList[len(xList) - 1]], [yList[len(yList) - 1]], c='r', s=40)
 #========================================================================================================================================================
 
 class Control_Station(tk.Tk):
@@ -216,7 +236,7 @@ class Control_Station(tk.Tk):
         frame = PageOne(container, self.root_new_Side_Screen_One)
         frame.grid(row=0, column=0, sticky="nsew")
         frame.tkraise()     
-        ani1 = animation.FuncAnimation(g, animate, interval=500)
+        ani1 = animation.FuncAnimation(g, animate, interval=250)
         self.root_new_Side_Screen_One.mainloop()
         
     def NewSideScreenTwo(self):      
@@ -239,7 +259,7 @@ class Control_Station(tk.Tk):
         frame = PageThree(container, self.root_new_Center_Screen)
         frame.grid(row=0, column=0, sticky="nsew")
         frame.tkraise()  
-        ani = animation.FuncAnimation(f, animate, interval=500)
+        ani = animation.FuncAnimation(f, animate, interval=250)
         self.root_new_Center_Screen.mainloop()
         
 def qf(param):
