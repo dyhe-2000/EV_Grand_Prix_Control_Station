@@ -121,6 +121,29 @@ def gauge(labels=['LOW','MEDIUM','HIGH','VERY HIGH','EXTREME'], colors='jet_r', 
     return ax
 #===============================================================================================
 
+#==============================================battery==========================================
+def battery(level_reading_l=0, level_reading_r=0, ax=None):
+    if level_reading_l > 100.0:
+        level_reading_l = 100.0
+    if level_reading_l < 0.0:
+        level_reading_l = 0.0
+    if level_reading_r > 100.0:
+        level_reading_r = 100.0
+    if level_reading_r < 0.0:
+        level_reading_r = 0.0
+    N = 2
+    level_reading = (level_reading_l, level_reading_r)
+    ind = np.arange(N)
+    width = 0.35
+    ax.bar(['left', 'right'], level_reading, width, color=((((100-level_reading_l)/100.0),(level_reading_l/100.0),0.0), (((100-level_reading_r)/100.0),(level_reading_r/100.0),0.0)))
+    for index, value in enumerate(level_reading):
+        ax.text(index - 0.05, value + 1, str(value), color='blue', fontweight='bold')
+    ax.set_ylabel('percentage')
+    ax.set_title('battery level')
+    ax.set_yticks(np.arange(0, 101, 10))
+    return ax
+#===============================================================================================
+
 LARGE_FONT= ("Verdana", 12)
 NORM_FONT= ("Verdana", 10)
 SMALL_FONT= ("Verdana", 8)
@@ -139,10 +162,12 @@ f = Figure(figsize=(25,25), dpi=100)
 a = f.add_subplot(2,2,4)
 b = f.add_subplot(2,2,1)
 e = f.add_subplot(2,2,2)
+h = f.add_subplot(2,2,3)
 track_image = plt.imread("purdue_race_track.jpg")
 e.imshow(track_image)
 e.grid(False)
 gauge(labels=['0','10','20','30','40','50','60'], colors='RdBu', arrow=7, title='NIWA ENSO TRACKER', ax=b)
+battery(level_reading_l=30, level_reading_r=10, ax=h)
 
 g = Figure(figsize=(25,25), dpi=100)
 c = g.add_subplot(2,2,4)
@@ -185,14 +210,28 @@ def animate(i):
     for eachLine in dataList:
         if len(eachLine) > 1:
             x, y = eachLine.split(',')
-            xList.append(int(x))
-            yList.append(int(y))
+            xList.append(float(x))
+            yList.append(float(y))
             
     if len(xList) > 0 and len(yList) > 0:
         e.clear()
         e.imshow(track_image)
         e.grid(False)
         e.scatter([xList[len(xList) - 1]], [yList[len(yList) - 1]], c='r', s=40)
+        
+    pullData = open("battery_status.txt", "r").read()
+    dataList = pullData.split('\n')
+    xList = []
+    yList = []
+    for eachLine in dataList:
+        if len(eachLine) > 1:
+            x, y = eachLine.split(',')
+            xList.append(float(x))
+            yList.append(float(y))
+            
+    if len(xList) > 0 and len(yList) > 0:
+        h.clear()
+        battery(xList[len(xList) - 1], yList[len(yList) - 1], ax=h)
 #========================================================================================================================================================
 
 class Control_Station(tk.Tk):
