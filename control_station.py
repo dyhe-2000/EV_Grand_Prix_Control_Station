@@ -161,18 +161,19 @@ style.use("ggplot")
 f = Figure(figsize=(25,25), dpi=100)
 a = f.add_subplot(2,2,4)
 b = f.add_subplot(2,2,1)
+c = f.add_subplot(2,2,3)
 e = f.add_subplot(2,2,2)
-h = f.add_subplot(2,2,3)
+
+g = Figure(figsize=(25,25), dpi=100)
+h = g.add_subplot(2,2,1)
+
 track_image = plt.imread("purdue_race_track.jpg")
 e.imshow(track_image)
 e.grid(False)
 gauge(labels=['0','10','20','30','40','50','60'], colors='RdBu', arrow=7, title='NIWA ENSO TRACKER', ax=b)
 battery(level_reading_l=30, level_reading_r=10, ax=h)
 
-g = Figure(figsize=(25,25), dpi=100)
-c = g.add_subplot(2,2,4)
-d = g.add_subplot(2,2,1)
-gauge(labels=['0','10','20','30','40','50','60'], colors='RdBu', arrow=7, title='NIWA ENSO TRACKER', ax=d)
+
 
 def animate(i):
     pullData = open("sampleData.txt", "r").read()
@@ -187,8 +188,6 @@ def animate(i):
             
     a.clear()
     a.plot(xList, yList)
-    c.clear()
-    c.plot(xList, yList)
     
     pullData = open("mph.txt", "r").read()
     dataList = pullData.split('\n')
@@ -200,8 +199,6 @@ def animate(i):
     cur_mph = xList[len(xList) - 1]
     b.clear()
     gauge(labels=['0','5','10','15','20','25','30','35','40','45','50','55','60'], colors='RdBu', arrow=int(cur_mph)//5 + 1, title=str(cur_mph) + ' mph', ax=b)
-    d.clear()
-    gauge(labels=['0','5','10','15','20','25','30','35','40','45','50','55','60'], colors='RdBu', arrow=int(cur_mph)//5 + 1, title=str(cur_mph) + ' mph', ax=d)
     
     pullData = open("track_coordinates.txt", "r").read()
     dataList = pullData.split('\n')
@@ -232,6 +229,10 @@ def animate(i):
     if len(xList) > 0 and len(yList) > 0:
         h.clear()
         battery(xList[len(xList) - 1], yList[len(yList) - 1], ax=h)
+        
+    input_frame = plt.imread("frame.jpg")
+    c.imshow(input_frame)
+    c.grid(False)
 #========================================================================================================================================================
 
 class Control_Station(tk.Tk):
@@ -275,7 +276,7 @@ class Control_Station(tk.Tk):
         frame = PageOne(container, self.root_new_Side_Screen_One)
         frame.grid(row=0, column=0, sticky="nsew")
         frame.tkraise()     
-        ani1 = animation.FuncAnimation(g, animate, interval=250)
+        ani1 = animation.FuncAnimation(g, animate, interval=500)
         self.root_new_Side_Screen_One.mainloop()
         
     def NewSideScreenTwo(self):      
@@ -298,7 +299,7 @@ class Control_Station(tk.Tk):
         frame = PageThree(container, self.root_new_Center_Screen)
         frame.grid(row=0, column=0, sticky="nsew")
         frame.tkraise()  
-        ani = animation.FuncAnimation(f, animate, interval=250)
+        ani = animation.FuncAnimation(f, animate, interval=500)
         self.root_new_Center_Screen.mainloop()
         
 def qf(param):
