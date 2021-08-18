@@ -25,7 +25,7 @@ def rot_text(ang):
     rotation = np.degrees(np.radians(ang) * np.pi / np.pi - np.radians(90))
     return rotation
     
-def gauge(labels=['LOW','MEDIUM','HIGH','VERY HIGH','EXTREME'], colors='jet_r', arrow=1, title='', ax=None): 
+def gauge(labels=['LOW','MEDIUM','HIGH','VERY HIGH','EXTREME'], colors='jet_r', arrow=1, title='', ax=None, header=''): 
     
     """
     some sanity checks first
@@ -118,6 +118,7 @@ def gauge(labels=['LOW','MEDIUM','HIGH','VERY HIGH','EXTREME'], colors='jet_r', 
     ax.axes.set_yticks([])
     ax.axis('equal')
     # plt.tight_layout()
+    ax.set_title(header)
     return ax
 #===============================================================================================
 
@@ -161,45 +162,32 @@ style.use("ggplot")
 f = Figure(figsize=(25,25), dpi=100)
 a = f.add_subplot(2,2,4)
 b = f.add_subplot(2,2,1)
-c = f.add_subplot(2,2,3)
+# c = f.add_subplot(2,2,3)
 e = f.add_subplot(2,2,2)
-
-g = Figure(figsize=(25,25), dpi=100)
-h = g.add_subplot(2,2,1)
 
 track_image = plt.imread("purdue_race_track.jpg")
 e.imshow(track_image)
 e.grid(False)
 gauge(labels=['0','10','20','30','40','50','60'], colors='RdBu', arrow=7, title='NIWA ENSO TRACKER', ax=b)
-battery(level_reading_l=30, level_reading_r=10, ax=h)
 
-
-
-def animate(i):
-    pullData = open("sampleData.txt", "r").read()
-    dataList = pullData.split('\n')
-    xList = []
-    yList = []
-    for eachLine in dataList:
-        if len(eachLine) > 1:
-            x, y = eachLine.split(',')
-            xList.append(int(x))
-            yList.append(int(y))
-            
-    a.clear()
-    a.plot(xList, yList)
-    
+def animate_mph(i):
     pullData = open("mph.txt", "r").read()
     dataList = pullData.split('\n')
     xList = []
     for eachLine in dataList:
-        if len(eachLine) > 1:
+        if len(eachLine) > 0:
             x= eachLine.split()[0]
             xList.append(float(x))
     cur_mph = xList[len(xList) - 1]
     b.clear()
-    gauge(labels=['0','5','10','15','20','25','30','35','40','45','50','55','60'], colors='RdBu', arrow=int(cur_mph)//5 + 1, title=str(cur_mph) + ' mph', ax=b)
+    gauge(labels=['0','5','10','15','20','25','30','35','40','45','50','55','60'], colors='RdBu', arrow=int(cur_mph)//5 + 1, title=str(cur_mph) + ' mph', ax=b, header='speed')
+
+def animate_first_view(i):
+    input_frame = plt.imread("frame.jpg")
+    c.imshow(input_frame)
+    c.grid(False)
     
+def animate_map(i):
     pullData = open("track_coordinates.txt", "r").read()
     dataList = pullData.split('\n')
     xList = []
@@ -215,8 +203,105 @@ def animate(i):
         e.imshow(track_image)
         e.grid(False)
         e.scatter([xList[len(xList) - 1]], [yList[len(yList) - 1]], c='r', s=40)
-        
+
+def animate_center(i):
+    pullData = open("avg_lap_time.txt", "r").read()
+    dataList = pullData.split('\n')
+    xList = []
+    for eachLine in dataList:
+        xList.append(float(eachLine))
+    avg_lap_time = xList[len(xList) - 1]
+    
+    pullData = open("current_lap_time.txt", "r").read()
+    dataList = pullData.split('\n')
+    xList = []
+    for eachLine in dataList:
+        xList.append(float(eachLine))
+    current_lap_time = xList[len(xList) - 1]
+    
+    pullData = open("mode.txt", "r").read()
+    dataList = pullData.split('\n')
+    xList = []
+    for eachLine in dataList:
+        xList.append(eachLine)
+    mode = xList[len(xList) - 1]
+    
+    pullData = open("shut_down_status.txt", "r").read()
+    dataList = pullData.split('\n')
+    xList = []
+    for eachLine in dataList:
+        xList.append(eachLine)
+    shut_down_status = xList[len(xList) - 1]
+    a.clear()
+    a.axis([0, 10, 0, 10])
+    a.text(2, 6, r'current_lap_time: '+str(current_lap_time)+'s', fontsize=15)
+    a.text(2, 5, r'avg_lap_time: '+str(avg_lap_time)+'s', fontsize=15)
+    a.text(2, 4, r'current mode: '+str(mode), fontsize=15)
+    a.text(2, 3, r'shut down status: '+str(shut_down_status), fontsize=15)
+#========================================================================================================================================================
+
+
+#==============================================plot for side screen one==============================================================================    
+side_screen_one = Figure(figsize=(25,25), dpi=100)
+one_one = side_screen_one.add_subplot(2,2,1)
+one_two = side_screen_one.add_subplot(2,2,2)
+one_three = side_screen_one.add_subplot(2,2,3)
+
+battery(level_reading_l=30, level_reading_r=10, ax=one_one)
+gauge(labels=['-40','-30','-20','-10','0','10','20','30','40'], colors='RdBu', arrow=7, title='', ax=one_two)
+    
+def animate_side_one(i):
     pullData = open("battery_status.txt", "r").read()
+    dataList = pullData.split('\n')
+    xList = []
+    yList = []
+    for eachLine in dataList:
+        if len(eachLine) > 0:
+            x, y = eachLine.split(',')
+            xList.append(float(x))
+            yList.append(float(y))
+            
+    if len(xList) > 0 and len(yList) > 0:
+        one_one.clear()
+        battery(xList[len(xList) - 1], yList[len(yList) - 1], ax=one_one)
+        
+    pullData = open("steering_angle.txt", "r").read()
+    dataList = pullData.split('\n')
+    xList = []
+    for eachLine in dataList:
+        if len(eachLine) > 0:
+            x= eachLine.split()[0]
+            xList.append(float(x))
+    cur_angle = xList[len(xList) - 1]
+    one_two.clear()
+    gauge(labels=['-40','-30','-20','-10','0','10','20','30','40'], colors='RdBu', arrow=int(cur_angle + 40)//10 + 1, title=str(cur_angle) + ' degree', ax=one_two, header="steering")
+    
+    pullData = open("breakforce.txt", "r").read()
+    dataList = pullData.split('\n')
+    xList = []
+    for eachLine in dataList:
+        if len(eachLine) > 0:
+            x= eachLine.split()[0]
+            xList.append(float(x))
+    cur_breakforce = xList[len(xList) - 1]
+    one_three.clear()
+    gauge(labels=['0','10','20','30','40','50','60','70','80','90','100'], colors='RdBu', arrow=int(cur_breakforce)//10 + 1, title=str(cur_breakforce) + ' %', ax=one_three, header='break')
+#========================================================================================================================================================
+
+#==============================================plot for side screen two==============================================================================    
+side_screen_two = Figure(figsize=(25,25), dpi=100)
+two_one = side_screen_two.add_subplot(2,2,1)
+two_two = side_screen_two.add_subplot(2,2,2)
+two_three = side_screen_two.add_subplot(2,2,3)
+two_four = side_screen_two.add_subplot(2,2,4)
+
+two_one.set_title('speed vs time')
+two_two.set_title('throttle(%) vs time')
+two_three.set_title('break(%) vs time')
+two_four.set_title('motor and ESC temperature(C) vs time')
+
+def animate_side_two(i):
+    pullData = open("speed.txt", "r").read()
     dataList = pullData.split('\n')
     xList = []
     yList = []
@@ -226,13 +311,52 @@ def animate(i):
             xList.append(float(x))
             yList.append(float(y))
             
-    if len(xList) > 0 and len(yList) > 0:
-        h.clear()
-        battery(xList[len(xList) - 1], yList[len(yList) - 1], ax=h)
-        
-    input_frame = plt.imread("frame.jpg")
-    c.imshow(input_frame)
-    c.grid(False)
+    two_one.clear()
+    two_one.set_title('speed vs time')
+    two_one.plot(xList, yList)
+    
+    pullData = open("throttle.txt", "r").read()
+    dataList = pullData.split('\n')
+    xList = []
+    yList = []
+    for eachLine in dataList:
+        if len(eachLine) > 1:
+            x, y = eachLine.split(',')
+            xList.append(float(x))
+            yList.append(float(y))
+            
+    two_two.clear()
+    two_two.set_title('throttle(%) vs time')
+    two_two.plot(xList, yList)
+    
+    pullData = open("break.txt", "r").read()
+    dataList = pullData.split('\n')
+    xList = []
+    yList = []
+    for eachLine in dataList:
+        if len(eachLine) > 1:
+            x, y = eachLine.split(',')
+            xList.append(float(x))
+            yList.append(float(y))
+            
+    two_three.clear()
+    two_three.set_title('break(%) vs time')
+    two_three.plot(xList, yList)
+    
+    pullData = open("temp.txt", "r").read()
+    dataList = pullData.split('\n')
+    xList = []
+    yList = []
+    for eachLine in dataList:
+        if len(eachLine) > 1:
+            x, y = eachLine.split(',')
+            xList.append(float(x))
+            yList.append(float(y))
+            
+    two_four.clear()
+    two_four.set_title('motor and ESC temperature(C) vs time')
+    two_four.plot(xList, yList)
+    
 #========================================================================================================================================================
 
 class Control_Station(tk.Tk):
@@ -276,10 +400,10 @@ class Control_Station(tk.Tk):
         frame = PageOne(container, self.root_new_Side_Screen_One)
         frame.grid(row=0, column=0, sticky="nsew")
         frame.tkraise()     
-        ani1 = animation.FuncAnimation(g, animate, interval=500)
+        ani1 = animation.FuncAnimation(side_screen_one, animate_side_one, interval=100)
         self.root_new_Side_Screen_One.mainloop()
         
-    def NewSideScreenTwo(self):      
+    def NewSideScreenTwo(self):  
         self.root_new_Side_Screen_Two = tk.Tk()
         container = tk.Frame(self.root_new_Side_Screen_Two)
         container.pack(side="top", fill="both", expand = True)
@@ -287,7 +411,8 @@ class Control_Station(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
         frame = PageTwo(container, self.root_new_Side_Screen_Two)
         frame.grid(row=0, column=0, sticky="nsew")
-        frame.tkraise()      
+        frame.tkraise()    
+        ani2 = animation.FuncAnimation(side_screen_two, animate_side_two, interval=100)
         self.root_new_Side_Screen_Two.mainloop()
         
     def NewCenterScreen(self):      
@@ -299,11 +424,20 @@ class Control_Station(tk.Tk):
         frame = PageThree(container, self.root_new_Center_Screen)
         frame.grid(row=0, column=0, sticky="nsew")
         frame.tkraise()  
-        ani = animation.FuncAnimation(f, animate, interval=500)
+        ani = animation.FuncAnimation(f, animate_center, interval=100)
+        # ani_center_three = animation.FuncAnimation(f, animate_first_view, interval=200)
+        ani_center_two = animation.FuncAnimation(f, animate_map, interval=100)
+        ani_center_one = animation.FuncAnimation(f, animate_mph, interval=50)
         self.root_new_Center_Screen.mainloop()
         
 def qf(param):
-    print(param)           
+    print(param) 
+
+def writeToFile(filename, content):
+    print(content)
+    with open(filename, "w") as myfile:
+        myfile.write(content)
+
         
 class StartPage(tk.Frame):
     
@@ -315,8 +449,8 @@ class StartPage(tk.Frame):
         button1 = ttk.Button(self, text="Side Screen 1", command=lambda: controller.NewSideScreenOne())
         button1.pack()
         
-        button2 = ttk.Button(self, text="Side Screen 2", command=lambda: controller.NewSideScreenTwo())
-        button2.pack()
+        # button2 = ttk.Button(self, text="Side Screen 2", command=lambda: controller.NewSideScreenTwo())
+        # button2.pack()
         
         button3 = ttk.Button(self, text="Center Screen", command=lambda: controller.NewCenterScreen())
         button3.pack()
@@ -333,7 +467,7 @@ class PageOne(tk.Frame):
         # button2 = ttk.Button(self, text="Page Two", command=lambda: controller.show_frame(PageTwo))
         # button2.pack()
         
-        canvas = FigureCanvasTkAgg(g, self)
+        canvas = FigureCanvasTkAgg(side_screen_one, self)
         canvas.draw()
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
@@ -353,6 +487,14 @@ class PageTwo(tk.Frame):
         # button2 = ttk.Button(self, text="Page One", command=lambda: controller.show_frame(PageOne))
         # button2.pack()
         
+        canvas = FigureCanvasTkAgg(side_screen_two, self)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        
+        toolbar = NavigationToolbar2Tk(canvas, self)
+        toolbar.update()
+        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        
 class PageThree(tk.Frame):
 
     def __init__(self, parent, controller):
@@ -360,14 +502,20 @@ class PageThree(tk.Frame):
         label = tk.Label(self, text="Center Screen!!!", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
         
-        # button1 = ttk.Button(self, text="Back to Home", command=lambda: qf("TEST"))
-        # button1.pack()
+        button1 = ttk.Button(self, text="emergency shut down", command=lambda: writeToFile("shut_down_status.txt","killed"))
+        button1.pack()
         
-        # button1 = ttk.Button(self, text="Side Screen 1", command=lambda: controller.NewSideScreenOne())
-        # button1.pack()
+        button5 = ttk.Button(self, text="release shut down", command=lambda: writeToFile("shut_down_status.txt","operational"))
+        button5.pack()
         
-        # button2 = ttk.Button(self, text="Side Screen 2", command=lambda: controller.NewSideScreenTwo())
-        # button2.pack()
+        button2 = ttk.Button(self, text="alter mode: normal", command=lambda: writeToFile("mode.txt", "normal"))
+        button2.pack()
+        
+        button3 = ttk.Button(self, text="alter mode: moderate", command=lambda: writeToFile("mode.txt", "moderate"))
+        button3.pack()
+        
+        button4 = ttk.Button(self, text="alter mode: agressive", command=lambda: writeToFile("mode.txt", "agressive"))
+        button4.pack()
         
         canvas = FigureCanvasTkAgg(f, self)
         canvas.draw()
